@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+.venv-linux/
+env/
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# Secrets / env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local artifacts
+фото/
+*.bak
+Снимок*.png
+SCREENSHOTS_README.md
+
+# Coursework artifacts (живут в /Сдача/, не в репо)
+Методические_рекомендации*.docx
+Отчет_по_*.docx
+Творческое_задание_*.docx
+Курсовая_работа_*.docx

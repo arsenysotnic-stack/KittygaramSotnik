@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "Kittygram — Паспорт здоровья кота",
+    "_postman_id": "a7d2b1f0-1234-4abc-9def-kittygram2026",
+    "description": "Коллекция запросов для скриншотов отчёта/творческого задания.\n\nПорядок выполнения — сверху вниз (нумерация в названиях). Перед запуском поднять Django: `python manage.py runserver`.\n\nПеременные коллекции:\n- base_url — http://127.0.0.1:8000\n- ivan_token — токен владельца кота Барсик\n- mike_token — токен чужого пользователя (владельца Мурки)\n- cat_id — id Барсика (5)\n- foreign_cat_id — id Мурки (6)\n- clinic_id — id клиники (1)\n- record_id — заполняется автоматически после запроса №2 (через тест)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000", "type": "string" },
+    { "key": "ivan_token", "value": "dd9a6d7f9bef2117d659021ed6b9aafbf21090ee", "type": "string" },
+    { "key": "mike_token", "value": "f398bd75be1e2887ca745ee5bc02deec581bb322", "type": "string" },
+    { "key": "cat_id", "value": "5", "type": "string" },
+    { "key": "foreign_cat_id", "value": "6", "type": "string" },
+    { "key": "clinic_id", "value": "1", "type": "string" },
+    { "key": "record_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01. Получить токен (POST /api/auth/token/) — 200",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"ivan\",\n  \"password\": \"pass1234\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/token/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "token", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "try { const t = pm.response.json().token; if (t) pm.collectionVariables.set('ivan_token', t); } catch(e) {}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Создание записи здоровья (POST /api/health/records/) — 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Token {{ivan_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cat\": {{cat_id}},\n  \"record_type\": \"vaccination\",\n  \"title\": \"Бешенство\",\n  \"description\": \"Плановая ежегодная вакцинация\",\n  \"date\": \"2026-04-10\",\n  \"next_date\": \"2027-04-10\",\n  \"clinic\": {{clinic_id}},\n  \"doctor_name\": \"Иванова А.В.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/health/records/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "try { const id = pm.response.json().id; if (id) pm.collectionVariables.set('record_id', id); } catch(e) {}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Список с фильтром ?record_type=vaccination — 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/?record_type=vaccination",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", ""],
+          "query": [{ "key": "record_type", "value": "vaccination" }]
+        }
+      }
+    },
+    {
+      "name": "04. Поиск ?search=Иванова — 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/?search=Иванова",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", ""],
+          "query": [{ "key": "search", "value": "Иванова" }]
+        }
+      }
+    },
+    {
+      "name": "05. Запись для чужого кота — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Token {{ivan_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cat\": {{foreign_cat_id}},\n  \"record_type\": \"visit\",\n  \"title\": \"Осмотр\",\n  \"date\": \"2026-04-10\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/health/records/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", ""]
+        }
+      }
+    },
+    {
+      "name": "06. next_date раньше date — 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Token {{ivan_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cat\": {{cat_id}},\n  \"record_type\": \"procedure\",\n  \"title\": \"Стрижка\",\n  \"date\": \"2026-04-10\",\n  \"next_date\": \"2026-03-01\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/health/records/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", ""]
+        }
+      }
+    },
+    {
+      "name": "07. Отметить выполненной (POST .../complete/) — 200",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Token {{ivan_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/{{record_id}}/complete/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", "{{record_id}}", "complete", ""]
+        }
+      }
+    },
+    {
+      "name": "08. Повторная отметка — 400",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Token {{ivan_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/{{record_id}}/complete/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", "{{record_id}}", "complete", ""]
+        }
+      }
+    },
+    {
+      "name": "09. Предстоящие процедуры кота — 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/cat/{{cat_id}}/upcoming/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", "cat", "{{cat_id}}", "upcoming", ""]
+        }
+      }
+    },
+    {
+      "name": "10. Статистика по коту — 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/health/records/cat/{{cat_id}}/stats/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "health", "records", "cat", "{{cat_id}}", "stats", ""]
+        }
+      }
+    },
+    {
+      "name": "11. Swagger UI (открыть в браузере) — 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/swagger/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "swagger", ""]
+        },
+        "description": "Это для скриншота **Swagger UI** в браузере, не в Postman. Открой URL в Chrome."
+      }
+    }
+  ]
+}
