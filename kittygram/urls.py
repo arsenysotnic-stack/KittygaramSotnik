@@ -6,6 +6,8 @@ from rest_framework.authtoken import views
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from .views import index
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Kittygram API",
@@ -20,6 +22,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include('cats.urls')),
     path('api/health/', include('health.urls')),
